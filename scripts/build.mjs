@@ -10,11 +10,11 @@ await mkdir(dist,{recursive:true});
 // Preserve the output directory itself so a running static server keeps its cwd.
 for(const entry of await readdir(dist)) await rm(path.join(dist,entry),{recursive:true,force:true});
 await cp(path.join(root,'public'),dist,{recursive:true});
-await writeFile(path.join(dist,'index.html'),page(site,home(site,projects),{title:'Sarp Aygen — Software Developer',description:site.description}));
+await writeFile(path.join(dist,'index.html'),page(site,home(site,projects),{title:'Sarp Aygen | Software Developer',description:site.description}));
 for(const p of projects){
   const folder=path.join(dist,'projects',p.slug);
   await mkdir(folder,{recursive:true});
-  await writeFile(path.join(folder,'index.html'),page(site,project(site,p,projects.find(q=>q!==p)),{title:`${p.name} — Sarp Aygen`,description:p.summary,base:'../../',path:`projects/${p.slug}/`}));
+  await writeFile(path.join(folder,'index.html'),page(site,project(site,p,projects.find(q=>q!==p)),{title:`${p.name} | Sarp Aygen`,description:p.summary,base:'../../',path:`projects/${p.slug}/`}));
 }
 await writeFile(path.join(dist,'.nojekyll'),'');
 if(site.siteUrl){

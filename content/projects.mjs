@@ -13,7 +13,7 @@ export default [
     features: [
       ['Transaction endpoints', 'Create a transaction, list all transactions, and retrieve one by ID through /api/transactions.'],
       ['Input validation', 'Require a merchant, positive amount, date, category, and transaction type before saving.'],
-      ['Clear error responses', 'Return field-specific validation errors with HTTP 400, and HTTP 404 when a requested transaction is missing.'],
+      ['Clear error responses', 'Return validation errors for individual fields with HTTP 400, and HTTP 404 when a requested transaction is missing.'],
       ['Separated persistence', 'Use a Spring Data JPA repository and a Transaction entity for database access, with PostgreSQL integration.']
     ],
     choices: [
@@ -26,13 +26,13 @@ export default [
       {title: 'Make invalid data useful to the caller.', body: 'An incomplete transaction should produce an actionable response. The model uses validation annotations, the controller applies @Valid, and a shared exception handler turns field errors into a response keyed by field name. A missing merchant can therefore be reported directly instead of becoming an unexplained server failure.', tradeoff: 'Returning the entity directly keeps this early API small. A separate request/response model would give future versions more control over what callers can submit and receive.'},
       {title: 'Keep the route separate from the work.', body: 'TransactionController delegates to TransactionService, which uses TransactionRepository. When an ID is missing, the service raises NotFoundException and the shared handler produces a 404. The same error policy can apply without duplicating response logic in every endpoint.', tradeoff: 'The service layer is deliberately thin at this stage. It provides a place for future rules without adding those rules before they are needed.'}
     ],
-    testing: 'API development has been checked manually through Postman. The inspected public repository includes a Spring application-context test, but does not yet contain endpoint or validation regression tests. The API example is an illustrative request based on the current model; it is not a captured live response.',
+    testing: 'API development has been checked manually through Postman. The inspected public repository includes a test that loads the Spring application context, but does not yet contain endpoint or validation regression tests. The API example is an illustrative request based on the current model; it is not a captured live response.',
     lessons: 'A small API makes the boundaries visible: the controller handles requests, the service coordinates behavior, and the repository handles storage. Validation and centralized errors give that structure a consistent contract for callers.',
     limitations: 'The published version focuses on create and read operations. A frontend and broader budgeting features remain future work. Update/delete and CSV preview are not part of this public source snapshot.',
     next: ['Add endpoint and validation regression tests.', 'Publish and verify the remaining transaction and CSV preview work.', 'Build financial summaries on top of the transaction model.'],
     evidence: [
       ['Transaction controller', 'src/main/java/spendwise/controller/TransactionController.java'],
-      ['Service and missing-record behavior', 'src/main/java/spendwise/service/TransactionService.java'],
+      ['Service and handling of missing records', 'src/main/java/spendwise/service/TransactionService.java'],
       ['Transaction model and validation', 'src/main/java/spendwise/model/Transaction.java'],
       ['Central exception handler', 'src/main/java/spendwise/exception/GlobalExceptionHandler.java']
     ]
@@ -49,10 +49,10 @@ export default [
     problem: 'A desktop interface is not a stable API. Windows overlap, inventory layouts change, animations hide controls, and an accepted key press may not change the game immediately. Coordinating several windows requires the application to keep track of what it intended, what it sent, and what the screen actually confirms.',
     features: [
       ['Visual event and inventory detection', 'Use OpenCV matching and image processing to locate relevant regions, with Tesseract OCR for text and mutation labels.'],
-      ['Per-window action state', 'Track targets, pending inputs, retries, and visual confirmation separately for up to four windows.'],
-      ['Prioritized cleanup and recovery', 'Handle event end before lower-priority work, reject stale scan results, and let healthy windows continue when another window needs recovery.'],
+      ['Action state for each window', 'Track targets, pending inputs, retries, and visual confirmation separately for up to four windows.'],
+      ['Prioritized cleanup and recovery', 'Handle the end of an event before less urgent work, reject stale scan results, and let healthy windows continue when another window needs recovery.'],
       ['Bounded background work', 'Keep slower scans off the foreground input worker and limit outstanding jobs and UI messages.'],
-      ['Diagnostics and maintenance', 'Expose timestamped logs, capture previews, and independent anti-idle deadlines in a native Qt interface.']
+      ['Diagnostics and maintenance', 'Expose timestamped logs, capture previews, and independent deadlines for preventing idle timeouts in a native Qt interface.']
     ],
     choices: [
       ['Python + OpenCV + NumPy', 'Process small capture regions and identify visual structure in inventory and event banners.'],
@@ -61,19 +61,19 @@ export default [
       ['Windows APIs + background threads', 'Verify foreground ownership, serialize input, and observe events without blocking the action worker.']
     ],
     challenges: [
-      {title: 'A sent key is not a completed action.', body: 'Repeating a toggle too quickly can undo an input that arrived late. The application records the intended slot and accepted input, then uses two fresh matching observations to confirm equipment state. A hidden inventory remains uncertain; it does not become success merely because a key was sent. Retry guards and release-only retries protect against duplicate toggles.', tradeoff: 'Waiting for reliable evidence adds latency. Conservative checks can require another capture or rescan, but preserve the distinction between an attempted action and an observed result.'},
-      {title: 'Keep slow recognition away from urgent work.', body: 'Mutation OCR runs on copied captures in a bounded executor. Event-specific results are checked against current state before they can authorize an action. The foreground worker can service another ready window while a scan finishes, and event-end cleanup interrupts lower-priority work. Anti-idle deadlines are scheduled independently so unresolved maintenance cannot suppress them indefinitely.', tradeoff: 'Only one worker controls foreground input, so actions remain serialized. This avoids competing focus changes, while bounded queues favor current state over an unlimited backlog.'}
+      {title: 'A sent key is not a completed action.', body: 'Repeating a toggle too quickly can undo an input that arrived late. The application records the intended slot and accepted input, then uses two fresh matching observations to confirm equipment state. A hidden inventory remains uncertain; it does not become success merely because a key was sent. Retry guards and retries that only release keys protect against duplicate toggles.', tradeoff: 'Waiting for reliable evidence adds latency. Conservative checks can require another capture or rescan, but preserve the distinction between an attempted action and an observed result.'},
+      {title: 'Keep slow recognition away from urgent work.', body: 'Mutation OCR runs on copied captures in a bounded executor. Results for each event are checked against the current state before they can authorize an action. The foreground worker can service another ready window while a scan finishes, and cleanup at the end of an event interrupts less urgent work. Deadlines for preventing idle timeouts are scheduled independently so unresolved maintenance cannot suppress them indefinitely.', tradeoff: 'Only one worker controls foreground input, so actions remain serialized. This avoids competing focus changes, while bounded queues favor current state over an unlimited backlog.'}
     ],
     testing: 'The repository’s recorded version 3.5.1 validation log reports 12 of 12 regression suites passing. Coverage includes delayed and dropped inputs, stale OCR, hidden inventories, disconnected clients, event interruptions, and Qt interface behavior. Image processing and offscreen Qt checks use real code; Windows input and timing scenarios are simulated. These are recorded repository results, not a new live test performed for this portfolio.',
     lessons: 'Reliable automation needs uncertainty to be an explicit state. Separating observation, input, and confirmation makes failures easier to diagnose, while bounded work and independent recovery keep one difficult window from consuming the entire session.',
-    limitations: 'The implementation targets a specific game interface and requires visible content. Tracked windows must share event timing, and input takes foreground focus. Visual confirmation cannot prove server acceptance. Simulated tests do not establish overnight reliability or guarantee that anti-idle input prevents server disconnects.',
+    limitations: 'The implementation targets a specific game interface and requires visible content. Tracked windows must share event timing, and input takes foreground focus. Visual confirmation cannot prove server acceptance. Simulated tests do not establish overnight reliability or guarantee that input intended to prevent idle timeouts prevents server disconnects.',
     next: ['Expand validation on real Windows setups and display scales.', 'Collect reproducible captures for new interface failures.', 'Continue separating tightly coupled scheduling and recognition code.'],
     evidence: [
       ['Application and action handling', 'hallows_eve_macro.py'],
       ['Bounded runtime infrastructure', 'macro_runtime.py'],
       ['Recorded 3.5.1 validation results', 'VALIDATION_3_5_1.log'],
       ['Engineering audit and tradeoffs', 'AUDIT_3_5.md'],
-      ['Anti-idle scheduler and test scope', 'ANTI_IDLE_FIX_3_5_1.md']
+      ['Idle prevention scheduler and test scope', 'ANTI_IDLE_FIX_3_5_1.md']
     ]
   }
 ];
