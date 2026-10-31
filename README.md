@@ -1,6 +1,6 @@
 # Sarp Aygen — personal portfolio
 
-A complete static portfolio with a homepage and two dedicated engineering case studies. Dark charcoal, blue/cyan details, accessible navigation, a lightweight animated SVG, and real project evidence.
+A complete static portfolio with a homepage and two dedicated engineering case studies. Black backgrounds, orange accents, accessible navigation, a lightweight animated SVG, and real project evidence.
 
 ## Run locally in VS Code
 
