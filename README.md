@@ -33,33 +33,37 @@ Always edit the source files, not generated `dist/` HTML. Then build, check, and
 
 To add a screenshot to Spendwise, put it in `public/assets/`, then add an `image` field to that project matching the automation project's structure: `src`, `width`, `height`, `alt`, and `caption`. Use real dimensions, descriptive alternative text, and a caption that identifies what is shown. Prefer WebP for screenshots. The card and case study will pick it up on the next build. The API-example renderer is in `src/templates.mjs` if you want both a screenshot and an example.
 
-## Free publication through GitHub Pages
+## Published site and updates
 
-Confirmed intended public address: `https://sarpaygen.github.io`. The source is configured for this address, but it has not yet been deployed or checked for an existing site. If you already use your account's user site, keep it and use a separate project repository instead.
+Live portfolio: https://sarpaygen.github.io/
 
-1. Review the site locally and the supplied résumé. The original PDF is included unchanged, including the phone number and graduation year printed in it. The web contact section uses only the confirmed public email and social links.
-2. In GitHub, create a **public** repository named `SarpAygen.github.io` under your `SarpAygen` account. If it already exists, inspect its current content before replacing anything. For a separate project site, use a new name such as `portfolio`; its address will be `https://sarpaygen.github.io/portfolio/`.
-3. Open `content/site.mjs` and set `siteUrl` to the confirmed full address, with the repository path if applicable. Example: `siteUrl: 'https://sarpaygen.github.io'`. The build will generate canonical URLs, Open Graph URL fields, a sitemap, and robots.txt. It leaves them out until an address is configured.
-4. In the extracted portfolio folder, run:
+Source repository: https://github.com/SarpAygen/SarpAygen.github.io
+
+The site is published through GitHub Pages with GitHub Actions. The first portfolio deployment succeeded on 30 October 2026; the live pages and résumé download were verified on 31 October 2026.
+
+To work on the published repository in VS Code:
+
+```sh
+git clone https://github.com/SarpAygen/SarpAygen.github.io.git
+cd SarpAygen.github.io
+code .
+```
+
+Edit the source files listed above, then run:
 
 ```sh
 npm run build
 npm run check
-git init
 git add .
-git commit -m "Build personal portfolio"
-git branch -M main
-git remote add origin https://github.com/SarpAygen/SarpAygen.github.io.git
-git push -u origin main
+git commit -m "Update portfolio"
+git push origin main
 ```
 
-Use your actual repository URL in `git remote add`. These commands assume this is a new local repository. If Git asks for a name/email, set your preferred commit identity; do not paste a password into the repository. If you already have a Git repository, keep its configuration instead of reinitializing or overwriting the remote.
+Every push to `main` rebuilds and publishes `dist/`. Follow the run under **Actions → Publish portfolio to GitHub Pages**. The repository's **Settings → Pages → Source** is set to **GitHub Actions**. The same workflow can also be started manually with **Run workflow**.
 
-5. In the repository, go to **Settings → Pages → Build and deployment → Source**, and choose **GitHub Actions**.
-6. Open **Actions → Publish portfolio to GitHub Pages → Run workflow**, selecting `main`. This also recovers an initial run that happened before Pages was enabled.
-7. Wait for the workflow to finish successfully. Open the deployment URL shown by GitHub.
-8. Open each case-study URL directly and refresh it. Check both **View résumé** and **Download PDF** in your deployed browser. Check mobile Menu, email, LinkedIn, GitHub, and the enlarged project screenshot. The download link uses the standard same-origin HTML `download` attribute; browser settings can affect whether it downloads or opens the PDF.
-9. Future updates: edit the content or assets, run the build/check commands, then commit and push to `main`. The workflow builds and publishes `dist/` automatically.
+`content/site.mjs` contains the confirmed `siteUrl`, used for canonical URLs, Open Graph URL fields, the sitemap, and robots.txt. Keep it set to `https://sarpaygen.github.io` unless the site's public address changes.
+
+The original résumé PDF is included unchanged, including the phone number and graduation year printed in it. The web contact section uses the confirmed public email and social links. Replace `public/resume/Sarp_Aygen_Resume.pdf`, build, and push to update both résumé links.
 
 A GitHub Free account supports Pages from public repositories. The provider's github.io address requires no paid domain. Current published limits include a 1 GB site size and a soft 100 GB/month bandwidth limit. This portfolio is about 207 KiB before future assets. Pages is static hosting; it does not run Java or Python application backends. This website has no server, database, contact form, analytics, or third-party font requests. GitHub itself logs visitor IPs for security.
 
@@ -90,4 +94,4 @@ No graduation date is added to the web copy. The attached résumé is preserved 
 
 ## Verification
 
-See `VALIDATION.md` for checks performed and their limitations. The site has not been published; GitHub Actions and post-deployment checks remain pending.
+See `VALIDATION.md` for checks performed and their limitations. GitHub Actions completed successfully. The live homepage, both case-study routes, and résumé download were verified.
